@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { obtenerEstadoActualizado, NodoInterface } from './life';
+import { obtenerEstadoActualizado } from './main';
+import { NodoInterface } from './Universo/types';
 
 @Injectable()
 export class AppService {
