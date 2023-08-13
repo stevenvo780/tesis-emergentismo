@@ -1,16 +1,10 @@
 import { ValoresSistema, NodoInterface } from './types';
-import {
-  intercambiarCargas,
-  materiaEntrante,
-  cambioDeEstado,
-  relacionarNodos,
-  materiaSaliente,
-  siguienteGeneracion,
-} from './fisica';
+import { siguienteGeneracion, crearNodo, expandirEspacio } from './fisica';
 
 export class Universo {
   private nodos: NodoInterface[] = [];
   private tiempo = 0;
+  private valoresSistema = ValoresSistema;
   private intervalo: NodeJS.Timeout;
 
   constructor() {
@@ -21,44 +15,37 @@ export class Universo {
     }, 500);
   }
 
-  public obtenerEstadoActualizado(): NodoInterface[] {
-    this.siguienteGeneracion();
-    return this.nodos;
+  public obtenerEstadoActualizado(): {
+    nodos: NodoInterface[];
+    valoresSistema: typeof ValoresSistema;
+  } {
+    return {
+      nodos: this.nodos,
+      valoresSistema: this.valoresSistema,
+    };
   }
 
   public detener(): void {
     clearInterval(this.intervalo);
   }
 
+  public getValores(): any {
+    return this.valoresSistema;
+  }
+
   private determinacionesDelSistema() {
     for (let i = 0; i < ValoresSistema.FILAS; i++) {
       for (let j = 0; j < ValoresSistema.COLUMNAS; j++) {
-        const nodo: NodoInterface = {
-          id: `nodo-${i}-${j}`,
-          memoria: {
-            cargas: Math.random() * 2 - 1,
-            vivo:
-              Math.random() > ValoresSistema.PROBABILIDAD_VIDA_INICIAL
-                ? true
-                : false,
-            edad: 0,
-            procesos: {
-              materiaEntrante,
-              cambioDeEstado,
-              materiaSaliente,
-              relacionarNodos,
-              intercambiarCargas,
-            },
-            relaciones: [],
-            propiedades: [],
-          },
-        };
+        const nodo: NodoInterface = crearNodo(i, j);
         this.nodos.push(nodo);
       }
     }
   }
 
   private siguienteGeneracion() {
-    siguienteGeneracion(this.nodos);
+    this.nodos = siguienteGeneracion(this.nodos, this.valoresSistema);
+    if (this.tiempo % 100 === 0) {
+      expandirEspacio(this.nodos, this.valoresSistema);
+    }
   }
 }
