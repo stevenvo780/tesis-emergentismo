@@ -1,23 +1,34 @@
-import { ValoresSistema, NodoInterface } from './types';
+import { NodoInterface, IValoresSistema, ValoresSistema } from './types';
 import { siguienteGeneracion, crearNodo, expandirEspacio } from './fisica';
 
 export class Universo {
-  private nodos: NodoInterface[] = [];
-  private tiempo = 0;
-  private valoresSistema = ValoresSistema;
+  public nodos: NodoInterface[] = [];
+  public tiempo = 0;
+  public valoresSistema: IValoresSistema;
   private intervalo: NodeJS.Timeout;
 
-  constructor() {
+  constructor(valoresSistema?: IValoresSistema) {
+    if (valoresSistema) {
+      console.log(valoresSistema);
+      this.valoresSistema = valoresSistema;
+    } else {
+      this.valoresSistema = Object.keys(ValoresSistema)
+        .filter((key) => isNaN(Number(key)))
+        .reduce((obj, key) => {
+          obj[key] = ValoresSistema[key];
+          return obj;
+        }, {} as IValoresSistema);
+    }
     this.determinacionesDelSistema();
     this.intervalo = setInterval(() => {
       this.siguienteGeneracion();
       this.tiempo++;
-    }, 500);
+    }, 100);
   }
 
   public obtenerEstadoActualizado(): {
     nodos: NodoInterface[];
-    valoresSistema: typeof ValoresSistema;
+    valoresSistema: IValoresSistema;
   } {
     return {
       nodos: this.nodos,
@@ -34,11 +45,11 @@ export class Universo {
   }
 
   private determinacionesDelSistema() {
-    for (let i = 0; i < ValoresSistema.FILAS; i++) {
-      for (let j = 0; j < ValoresSistema.COLUMNAS; j++) {
+    for (let i = 0; i < this.valoresSistema.FILAS; i++) {
+      for (let j = 0; j < this.valoresSistema.COLUMNAS; j++) {
         let cargas = Math.random() * 2 - 1;
         let energia = 1 - Math.abs(cargas);
-        if (Math.random() > ValoresSistema.PROBABILIDAD_VIDA_INICIAL) {
+        if (Math.random() > this.valoresSistema.PROBABILIDAD_VIDA_INICIAL) {
           cargas = 0;
           energia = 0;
         }

@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Universo } from './Universo/ruluat';
+import { Entrenador } from './Universo/entrenador'; // Asegúrate de importar la clase Entrenador desde la ubicación correcta
 
-export const universo = new Universo();
+const entrenador = new Entrenador();
 
 export const obtenerEstadoActualizado = () => {
-  return universo.obtenerEstadoActualizado();
+  return entrenador.universo.obtenerEstadoActualizado(); // Accede al universo a través del entrenador
 };
 
 async function bootstrap() {

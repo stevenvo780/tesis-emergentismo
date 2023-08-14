@@ -1,4 +1,4 @@
-import { ValoresSistema, NodoInterface } from './types';
+import { NodoInterface, IValoresSistema } from './types';
 
 export const crearNodo = (
   i: number,
@@ -21,15 +21,18 @@ export const crearNodo = (
   };
 };
 
-export const ruliat = (nodo: NodoInterface) => {
+export const ruliat = (
+  nodo: NodoInterface,
+  valoresSistema: IValoresSistema,
+) => {
   // Transición espontánea
-  if (Math.random() < ValoresSistema.PROBABILIDAD_TRANSICION) {
+  if (Math.random() < valoresSistema.PROBABILIDAD_TRANSICION) {
     nodo.memoria.cargas = -nodo.memoria.cargas; // Cambio de estado
   }
 
   // Fluctuaciones del vacío cuántico
   const fluctuacion =
-    (Math.random() * 2 - 1) * ValoresSistema.FLUCTUACIÓN_MAXIMA;
+    (Math.random() * 2 - 1) * valoresSistema.FLUCTUACION_MAXIMA;
   nodo.memoria.cargas += fluctuacion;
 
   // Ajuste adicional para fluctuaciones variables
@@ -42,7 +45,7 @@ export const ruliat = (nodo: NodoInterface) => {
   // Túnel cuántico (ejemplo simplificado)
   if (
     nodo.memoria.cargas > 0.5 &&
-    Math.random() < ValoresSistema.PROBABILIDAD_TUNEL
+    Math.random() < valoresSistema.PROBABILIDAD_TUNEL
   ) {
     nodo.memoria.cargas = 0; // Atraviesa una barrera
   }
@@ -63,17 +66,19 @@ const calcularEnergia = (nodo: NodoInterface) => {
 };
 
 const esParteDeGrupoCircular = (
+  valoresSistema: IValoresSistema,
   nodo: NodoInterface,
   vecinos: NodoInterface[],
 ): boolean => {
   // Puedes ajustar esta lógica según tus necesidades
   return (
-    vecinos.length >= ValoresSistema.LIMITE_RELACIONAL &&
-    nodo.memoria.relaciones.length >= ValoresSistema.LIMITE_RELACIONAL
+    vecinos.length >= valoresSistema.LIMITE_RELACIONAL &&
+    nodo.memoria.relaciones.length >= valoresSistema.LIMITE_RELACIONAL
   );
 };
 
 export const intercambiarCargas = (
+  valoresSistema: IValoresSistema,
   nodoA: NodoInterface,
   nodoB: NodoInterface,
   esGrupoCircular: boolean,
@@ -81,7 +86,7 @@ export const intercambiarCargas = (
   let cargaCompartida = (nodoA.memoria.cargas + nodoB.memoria.cargas) / 2;
 
   if (esGrupoCircular) {
-    cargaCompartida = cargaCompartida * (1 - ValoresSistema.FACTOR_ESTABILIDAD);
+    cargaCompartida = cargaCompartida * (1 - valoresSistema.FACTOR_ESTABILIDAD);
   }
   nodoA.memoria.cargas = cargaCompartida;
   nodoB.memoria.cargas = cargaCompartida;
@@ -100,7 +105,7 @@ export const intercambiarCargas = (
 
 const obtenerVecinos = (
   nodos: NodoInterface[],
-  valoresSistema: typeof ValoresSistema,
+  valoresSistema: IValoresSistema,
   i: number,
   j: number,
 ): NodoInterface[] => {
@@ -134,14 +139,15 @@ const calcularDistancia = (nodoA: NodoInterface, nodoB: NodoInterface) => {
 };
 
 export const relacionarNodos = (
+  valoresSistema: IValoresSistema,
   nodo: NodoInterface,
   vecinos: NodoInterface[],
 ) => {
-  if (nodo.memoria.energia > ValoresSistema.ENERGIA) {
+  if (nodo.memoria.energia > valoresSistema.ENERGIA) {
     vecinos.forEach((vecino) => {
       if (
         vecino &&
-        vecino.memoria.energia > ValoresSistema.ENERGIA &&
+        vecino.memoria.energia > valoresSistema.ENERGIA &&
         vecino.id !== nodo.id &&
         vecino.id > nodo.id
       ) {
@@ -150,13 +156,13 @@ export const relacionarNodos = (
         );
         const distancia = calcularDistancia(nodo, vecino);
         const distanciaMaximaPermitida =
-          ValoresSistema.DISTANCIA_MAXIMA_RELACION; // Añadir este valor en ValoresSistema
+          valoresSistema.DISTANCIA_MAXIMA_RELACION; // Añadir este valor en ValoresSistema
         if (distancia > distanciaMaximaPermitida) return; // No relacionar nodos lejanos
 
         const probabilidadRelacion =
           (diferenciaCargas / 2) *
           (1 / distancia) *
-          ValoresSistema.FACTOR_RELACION; // Añadir FACTOR_RELACION en ValoresSistema
+          valoresSistema.FACTOR_RELACION; // Añadir FACTOR_RELACION en ValoresSistema
 
         if (
           Math.random() < probabilidadRelacion &&
@@ -181,17 +187,12 @@ export const relacionarNodos = (
 
   // Reducir gradualmente la carga compartida y eliminar relaciones con carga cero
   nodo.memoria.relaciones = nodo.memoria.relaciones.filter((rel) => {
-    // if (rel.cargaCompartida < 0)
-    //   rel.cargaCompartida += ValoresSistema.REDUCCION_CARGA;
-    // if (rel.cargaCompartida > 0)
-    //   rel.cargaCompartida -= ValoresSistema.REDUCCION_CARGA;
-
     // Condición para romper la relación si la energía de la carga compartida se acerca a 0
-    if (Math.abs(rel.cargaCompartida) < ValoresSistema.ENERGIA) {
+    if (Math.abs(rel.cargaCompartida) < valoresSistema.ENERGIA) {
       return false; // Romper la relación
     }
 
-    if (nodo.memoria.energia <= ValoresSistema.ENERGIA) {
+    if (nodo.memoria.energia <= valoresSistema.ENERGIA) {
       return false; // Eliminar la relación si la carga es cero o negativa
     }
     return true;
@@ -200,7 +201,7 @@ export const relacionarNodos = (
 
 export const expandirEspacio = (
   nodos: NodoInterface[],
-  valoresSistema: typeof ValoresSistema,
+  valoresSistema: IValoresSistema,
 ) => {
   // Añadir filas en la parte inferior
   for (let i = 0; i < valoresSistema.CRECIMIENTO_X; i++) {
@@ -245,28 +246,38 @@ export const expandirEspacio = (
 
 export const siguienteGeneracion = (
   nodos: NodoInterface[],
-  valoresSistema: typeof ValoresSistema,
+  valoresSistema: IValoresSistema,
 ) => {
   const nuevaGeneracion: NodoInterface[] = nodos;
-  for (let i = 0; i < ValoresSistema.FILAS; i++) {
-    for (let j = 0; j < ValoresSistema.COLUMNAS; j++) {
-      const nodo = nuevaGeneracion[i * ValoresSistema.COLUMNAS + j];
+  for (let i = 0; i < valoresSistema.FILAS; i++) {
+    for (let j = 0; j < valoresSistema.COLUMNAS; j++) {
+      const nodo = nuevaGeneracion[i * valoresSistema.COLUMNAS + j];
       const vecinos = obtenerVecinos(nodos, valoresSistema, i, j);
-      const esGrupoCircular = esParteDeGrupoCircular(nodo, vecinos);
-      ruliat(nodo);
+      if (!vecinos || !nodo) {
+        console.error('nodos:', valoresSistema);
+        console.log(JSON.stringify(nodos[nodos.length - 1], null, 4));
+        //console.error('nodos:', nodos.length);
+        //console.error('Vecinos no definidos para nodo:', i, j);
+        continue; // Saltar a la siguiente iteración si los vecinos no están definidos
+      }
+      const esGrupoCircular = esParteDeGrupoCircular(
+        valoresSistema,
+        nodo,
+        vecinos,
+      );
+      ruliat(nodo, valoresSistema);
       procesoDeVidaOMuerte(nodo); // Proceso de vida o muerte
-      relacionarNodos(nodo, vecinos); // Relacionar nodos
-
+      relacionarNodos(valoresSistema, nodo, vecinos); // Relacionar nodo
       vecinos.forEach((vecino) => {
         if (
-          (vecino && nodo.memoria.cargas < 0 && vecino.memoria.cargas > 0) ||
-          (nodo.memoria.cargas > 0 && vecino.memoria.cargas < 0)
+          (nodo?.memoria.cargas < 0 && vecino?.memoria.cargas > 0) ||
+          (nodo?.memoria.cargas > 0 && vecino?.memoria.cargas < 0)
         ) {
-          intercambiarCargas(nodo, vecino, esGrupoCircular);
+          intercambiarCargas(valoresSistema, nodo, vecino, esGrupoCircular);
         }
       });
     }
   }
-  //console.log(JSON.stringify(nodos, null, 4));
+
   return nuevaGeneracion;
 };
