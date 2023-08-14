@@ -36,7 +36,13 @@ export class Universo {
   private determinacionesDelSistema() {
     for (let i = 0; i < ValoresSistema.FILAS; i++) {
       for (let j = 0; j < ValoresSistema.COLUMNAS; j++) {
-        const nodo: NodoInterface = crearNodo(i, j);
+        let cargas = Math.random() * 2 - 1;
+        let energia = 1 - Math.abs(cargas);
+        if (Math.random() > ValoresSistema.PROBABILIDAD_VIDA_INICIAL) {
+          cargas = 0;
+          energia = 0;
+        }
+        const nodo: NodoInterface = crearNodo(i, j, cargas, energia);
         this.nodos.push(nodo);
       }
     }
